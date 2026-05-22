@@ -122,7 +122,6 @@ end
 -- Slash commands
 ---------------------------------------------------------------------------
 SLASH_PVPENEMY1 = "/pvpenemy"
-SLASH_PVPENEMY2 = "/pve"
 SlashCmdList["PVPENEMY"] = function(msg)
     local cmd, arg = msg:match("^(%S+)%s*(.*)")
     cmd = cmd and cmd:lower() or msg:lower()

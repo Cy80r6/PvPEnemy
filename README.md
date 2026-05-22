@@ -32,7 +32,6 @@ A World of Warcraft **TBC Anniversary / Classic Era** addon that tracks enemy pl
 | `/pvpenemy alert <1-30>` | Set warning banner duration (seconds) |
 | `/pvpenemy bg` | Toggle tracking in battlegrounds/arenas |
 
-Short alias: `/pve`
 
 ## Compatibility
 
