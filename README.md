@@ -7,9 +7,26 @@ A World of Warcraft **TBC Anniversary / Classic Era** addon that tracks enemy pl
 
 ## What it does
 
+**Kill tracking**
 - When you die to an enemy player, a popup asks if you want to add them to your kill list
-- If you later encounter someone from your list (nameplate, target, mouseover), a warning banner appears with their name, class, and how many times they've killed you
-- Data persists between sessions
+- Stores their name, class, race, level, how many times they've killed you, and where it happened
+- Tracks your wins too — the addon notices when you kill someone on your list and counts it as a revenge
+
+**Alerts**
+- When you encounter a tracked enemy (nameplate, target, mouseover), a warning banner appears at the top of your screen with their name, class, kill/win count, last seen zone, and any note you've set
+- Optional screen flash and sound alert
+- 30-second cooldown per enemy to avoid spam
+
+**Notes & history**
+- Add personal notes to any enemy (`/pvpenemy note`) — shown in the warning banner and kill list
+- Full kill list with deaths, wins, level comparison, last kill time and zone
+
+**Guild sharing**
+- Optionally broadcast enemy alerts to your online guild members (`/pvpenemy share`)
+- Uses a random 1–3s delay with deduplication — if multiple people spot the same enemy at once, only one alert goes out
+- When a guildie spots your enemy and you kill them, a popup asks if you want to whisper them that you got revenge
+
+**All data persists between sessions**
 
 ## Installation
 
