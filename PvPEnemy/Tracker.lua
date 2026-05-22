@@ -64,6 +64,7 @@ function ns.OnPlayerDead()
     if not name then return end
 
     lastAttacker.myLevel = UnitLevel("player")
+    lastAttacker.zone = GetZoneText()
 
     -- Already on kill list? Just increment.
     if ns.IsEnemy(name) then

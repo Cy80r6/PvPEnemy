@@ -67,11 +67,12 @@ function ns.CheckUnit(unitId)
     CleanupRecentAlerts()
     recentAlerts[name] = now
 
-    -- Update level if we can see it now
+    -- Update level and zone
     local level = UnitLevel(unitId)
     if level and level > 0 then
         enemy.level = level
     end
+    enemy.lastZone = GetZoneText()
 
     -- Fire alert
     ns.ShowWarning(name, enemy, unitId)

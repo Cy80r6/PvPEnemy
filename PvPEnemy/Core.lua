@@ -68,6 +68,7 @@ function ns.AddEnemy(name, info)
         if info.class then entry.class = info.class end
         if info.race then entry.race = info.race end
         if info.myLevel then entry.myLevel = info.myLevel end
+        if info.zone then entry.lastZone = info.zone end
     else
         ns.db.enemies[name] = {
             kills = 1,
@@ -76,6 +77,7 @@ function ns.AddEnemy(name, info)
             class = info.class or "Unknown",
             race = info.race or "Unknown",
             myLevel = info.myLevel,
+            lastZone = info.zone,
         }
     end
     print("|cffff4444PvP Enemy|r: |cffff8800" .. name .. "|r added to kill list.")
@@ -168,8 +170,9 @@ SlashCmdList["PVPENEMY"] = function(msg)
             local color = ns.ClassColor(data.class)
             local killerLvl = (data.level and data.level > 0) and tostring(data.level) or "??"
             local myLvl = data.myLevel and tostring(data.myLevel) or "??"
-            print(string.format("  |c%s%s|r — Killed you %dx [Lvl %s vs your %s], last: %s",
-                color, name, data.kills, killerLvl, myLvl, date("%Y-%m-%d %H:%M", data.lastKill)))
+            local zonePart = data.lastZone and (" @ " .. data.lastZone) or ""
+            print(string.format("  |c%s%s|r — Killed you %dx [Lvl %s vs your %s], last: %s%s",
+                color, name, data.kills, killerLvl, myLvl, date("%Y-%m-%d %H:%M", data.lastKill), zonePart))
             if data.note then
                 print("    |cffffff00Note:|r " .. data.note)
             end
