@@ -31,40 +31,34 @@ function ns.OnCombatLogEvent()
         sourceGUID, sourceName, sourceFlags, sourceRaidFlags,
         destGUID, destName, destFlags, destRaidFlags = CombatLogGetCurrentEventInfo()
 
-    -- We only care about enemy players hitting us
-    if destGUID ~= UnitGUID("player") then return end
-    if not sourceGUID or sourceGUID == "" then return end
-
-    -- Check if source is an enemy player (flags: COMBATLOG_OBJECT_TYPE_PLAYER + COMBATLOG_OBJECT_REACTION_HOSTILE)
-    local isPlayer = bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_PLAYER) > 0
-    local isHostile = bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) > 0
-    if not (isPlayer and isHostile) then return end
-
-    -- Track when we kill a listed enemy
-    if subevent == "UNIT_DIED" then
-        if sourceGUID == playerGUID and destName then
-            local enemy = ns.GetEnemy(destName)
-            if not enemy then
-                -- fuzzy match
-                for storedName, data in pairs(ns.db.enemies) do
-                    if storedName:match("^([^-]+)") == destName then
-                        enemy = data; break
-                    end
+    -- Case 1: we killed someone
+    if subevent == "UNIT_DIED" and sourceGUID == playerGUID and destName then
+        local enemy, storedName = ns.GetEnemy(destName), destName
+        if not enemy then
+            for n, data in pairs(ns.db.enemies) do
+                if n:match("^([^-]+)") == destName then
+                    enemy = data; storedName = n; break
                 end
             end
-            if enemy then
-                enemy.wins = (enemy.wins or 0) + 1
-                print("|cffff4444PvP Enemy|r: You killed |cffff8800" .. destName .. "|r. Revenge! (" .. enemy.wins .. " win" .. (enemy.wins == 1 and "" or "s") .. ")")
-            end
+        end
+        if enemy then
+            enemy.wins = (enemy.wins or 0) + 1
+            print("|cffff4444PvP Enemy|r: You killed |cffff8800" .. destName .. "|r. Revenge! (" .. enemy.wins .. " win" .. (enemy.wins == 1 and "" or "s") .. ")")
+            if ns.OnEnemyKilled then ns.OnEnemyKilled(storedName) end
         end
         return
     end
 
-    if DAMAGE_EVENTS[subevent] then
-        -- Extract class and race from GUID
-        -- Player GUID format: Player-ServerID-CharacterID
-        local _, class, race, level = ns.GetInfoFromGUID(sourceGUID)
+    -- Case 2: enemy player is hitting us
+    if destGUID ~= UnitGUID("player") then return end
+    if not sourceGUID or sourceGUID == "" then return end
 
+    local isPlayer = bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_PLAYER) > 0
+    local isHostile = bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) > 0
+    if not (isPlayer and isHostile) then return end
+
+    if DAMAGE_EVENTS[subevent] then
+        local _, class, race, level = ns.GetInfoFromGUID(sourceGUID)
         lastAttacker = {
             name = sourceName,
             guid = sourceGUID,

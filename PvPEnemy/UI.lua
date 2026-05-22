@@ -204,3 +204,74 @@ function ns.ShowAddEnemyPopup(attackerInfo)
         pendingAttacker = nil
     end)
 end
+
+---------------------------------------------------------------------------
+-- Revenge popup (shown when you kill a shared enemy)
+---------------------------------------------------------------------------
+local revengeFrame = CreateFrame("Frame", "PvPEnemyRevengeFrame", UIParent, "BackdropTemplate")
+revengeFrame:SetSize(350, 110)
+revengeFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 200)
+revengeFrame:SetFrameStrata("DIALOG")
+revengeFrame:SetBackdrop({
+    bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true, tileSize = 16, edgeSize = 16,
+    insets = { left = 4, right = 4, top = 4, bottom = 4 },
+})
+revengeFrame:SetBackdropColor(0, 0.1, 0, 0.95)
+revengeFrame:SetBackdropBorderColor(0, 0.8, 0, 1)
+revengeFrame:EnableMouse(true)
+revengeFrame:SetMovable(true)
+revengeFrame:RegisterForDrag("LeftButton")
+revengeFrame:SetScript("OnDragStart", revengeFrame.StartMoving)
+revengeFrame:SetScript("OnDragStop", revengeFrame.StopMovingOrSizing)
+revengeFrame:Hide()
+
+local revengeTitle = revengeFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+revengeTitle:SetPoint("TOP", 0, -12)
+revengeTitle:SetText("|cff00ff00Revenge!|r")
+
+local revengeText = revengeFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+revengeText:SetPoint("TOP", revengeTitle, "BOTTOM", 0, -8)
+revengeText:SetWidth(310)
+revengeText:SetJustifyH("CENTER")
+
+local revengeYesButton = CreateFrame("Button", nil, revengeFrame, "UIPanelButtonTemplate")
+revengeYesButton:SetSize(140, 24)
+revengeYesButton:SetPoint("BOTTOMLEFT", 20, 12)
+revengeYesButton:SetText("Tell them!")
+
+local revengeNoButton = CreateFrame("Button", nil, revengeFrame, "UIPanelButtonTemplate")
+revengeNoButton:SetSize(100, 24)
+revengeNoButton:SetPoint("BOTTOMRIGHT", -20, 12)
+revengeNoButton:SetText("No")
+
+local pendingRevenge = nil
+local revengeTimer = nil
+
+revengeNoButton:SetScript("OnClick", function()
+    pendingRevenge = nil
+    revengeFrame:Hide()
+end)
+
+revengeYesButton:SetScript("OnClick", function()
+    if pendingRevenge and ns.SendRevengeWhisper then
+        ns.SendRevengeWhisper(pendingRevenge.enemyName, pendingRevenge.friendName)
+    end
+    pendingRevenge = nil
+    revengeFrame:Hide()
+end)
+
+function ns.ShowRevengePopup(enemyName, friendName)
+    pendingRevenge = { enemyName = enemyName, friendName = friendName }
+    revengeText:SetText(string.format(
+        "|cffffff00%s|r spotted |cffff8800%s|r.\nYou just killed them!\n\nTell |cffffff00%s|r you got revenge?",
+        friendName, enemyName, friendName))
+    revengeFrame:Show()
+
+    if revengeTimer then revengeTimer:Cancel() end
+    revengeTimer = C_Timer.NewTimer(30, function()
+        revengeFrame:Hide()
+        pendingRevenge = nil
+    end)
+end
