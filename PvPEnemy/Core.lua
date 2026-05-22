@@ -223,9 +223,9 @@ SlashCmdList["PVPENEMY"] = function(msg)
     elseif cmd == "share" then
         ns.db.settings.shareEnabled = not ns.db.settings.shareEnabled
         if ns.db.settings.shareEnabled then
-            print("|cffff4444PvP Enemy|r: Party sharing |cff00ff00enabled|r — enemy alerts will be sent to your group.")
+            print("|cffff4444PvP Enemy|r: Guild sharing |cff00ff00enabled|r — enemy alerts will be broadcast to online guild members.")
         else
-            print("|cffff4444PvP Enemy|r: Party sharing |cffff8800disabled|r.")
+            print("|cffff4444PvP Enemy|r: Guild sharing |cffff8800disabled|r.")
         end
 
     elseif cmd == "bg" then
@@ -246,7 +246,7 @@ SlashCmdList["PVPENEMY"] = function(msg)
         print("  |cff00ff00/pvpenemy sound|r — Toggle warning sound")
         print("  |cff00ff00/pvpenemy flash|r — Toggle screen flash")
         print("  |cff00ff00/pvpenemy alert <1-30>|r — Set warning banner duration in seconds")
-        print("  |cff00ff00/pvpenemy share|r — Toggle sharing enemy alerts with party/raid (default: off)")
+        print("  |cff00ff00/pvpenemy share|r — Toggle sharing enemy alerts with guild (default: off)")
         print("  |cff00ff00/pvpenemy bg|r — Toggle tracking in battlegrounds/arenas (default: off)")
     end
 end

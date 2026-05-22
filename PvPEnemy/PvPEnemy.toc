@@ -2,7 +2,7 @@
 ## Title: PvP Enemy
 ## Notes: Tracks players who killed you and warns you when you meet them again.
 ## Author: cy8org
-## Version: 1.0.8
+## Version: 1.0.9
 ## Category: PvP
 ## SavedVariables: PvPEnemyDB
 ## DefaultState: enabled
