@@ -76,4 +76,5 @@ function ns.CheckUnit(unitId)
 
     -- Fire alert
     ns.ShowWarning(name, enemy, unitId)
+    ns.ShareAlert(name, enemy)
 end

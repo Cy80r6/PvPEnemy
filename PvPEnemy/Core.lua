@@ -8,7 +8,8 @@ local DEFAULT_DB = {
         soundEnabled = true,
         flashEnabled = true,
         alertDuration = 5,
-        ignorePvPInstances = true,  -- disable tracking in BGs and arenas
+        ignorePvPInstances = true,
+        shareEnabled = false,
     },
 }
 
@@ -39,6 +40,7 @@ frame:SetScript("OnEvent", function(self, event, arg1)
         if ns.InitTracker then ns.InitTracker() end
         if ns.InitScanner then ns.InitScanner() end
         if ns.InitUI then ns.InitUI() end
+        if ns.InitShare then ns.InitShare() end
 
         self:UnregisterEvent("ADDON_LOADED")
         print("|cffff4444PvP Enemy|r loaded. Type |cff00ff00/pvpenemy|r for commands.")
@@ -218,6 +220,14 @@ SlashCmdList["PVPENEMY"] = function(msg)
             print("|cffff4444PvP Enemy|r: Usage: /pvpenemy alert <1-30>")
         end
 
+    elseif cmd == "share" then
+        ns.db.settings.shareEnabled = not ns.db.settings.shareEnabled
+        if ns.db.settings.shareEnabled then
+            print("|cffff4444PvP Enemy|r: Party sharing |cff00ff00enabled|r — enemy alerts will be sent to your group.")
+        else
+            print("|cffff4444PvP Enemy|r: Party sharing |cffff8800disabled|r.")
+        end
+
     elseif cmd == "bg" then
         ns.db.settings.ignorePvPInstances = not ns.db.settings.ignorePvPInstances
         if ns.db.settings.ignorePvPInstances then
@@ -236,6 +246,7 @@ SlashCmdList["PVPENEMY"] = function(msg)
         print("  |cff00ff00/pvpenemy sound|r — Toggle warning sound")
         print("  |cff00ff00/pvpenemy flash|r — Toggle screen flash")
         print("  |cff00ff00/pvpenemy alert <1-30>|r — Set warning banner duration in seconds")
+        print("  |cff00ff00/pvpenemy share|r — Toggle sharing enemy alerts with party/raid (default: off)")
         print("  |cff00ff00/pvpenemy bg|r — Toggle tracking in battlegrounds/arenas (default: off)")
     end
 end
