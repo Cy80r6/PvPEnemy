@@ -137,6 +137,30 @@ SlashCmdList["PVPENEMY"] = function(msg)
             ns.AddEnemy(name, {})
         end
 
+    elseif cmd == "note" then
+        local name, note = arg:match("^(%S+)%s+(.*)")
+        if not name or note == "" then
+            print("|cffff4444PvP Enemy|r: Usage: /pvpenemy note <Name-Realm> <text>")
+        else
+            local enemy = ns.GetEnemy(name)
+            if not enemy then
+                -- case-insensitive fallback
+                for n, _ in pairs(ns.db.enemies) do
+                    if n:lower() == name:lower() then enemy = ns.db.enemies[n]; name = n; break end
+                end
+            end
+            if enemy then
+                enemy.note = (note ~= "" and note or nil)
+                if enemy.note then
+                    print("|cffff4444PvP Enemy|r: Note set for |cffff8800" .. name .. "|r: " .. note)
+                else
+                    print("|cffff4444PvP Enemy|r: Note cleared for |cffff8800" .. name .. "|r.")
+                end
+            else
+                print("|cffff4444PvP Enemy|r: '" .. name .. "' not found on kill list.")
+            end
+        end
+
     elseif cmd == "list" then
         local count = 0
         print("|cffff4444PvP Enemy|r — Kill List:")
@@ -146,6 +170,9 @@ SlashCmdList["PVPENEMY"] = function(msg)
             local myLvl = data.myLevel and tostring(data.myLevel) or "??"
             print(string.format("  |c%s%s|r — Killed you %dx [Lvl %s vs your %s], last: %s",
                 color, name, data.kills, killerLvl, myLvl, date("%Y-%m-%d %H:%M", data.lastKill)))
+            if data.note then
+                print("    |cffffff00Note:|r " .. data.note)
+            end
             count = count + 1
         end
         if count == 0 then
@@ -201,6 +228,7 @@ SlashCmdList["PVPENEMY"] = function(msg)
         print("  |cff00ff00/pvpenemy add <Name[-Realm]>|r — Manually add enemy")
         print("  |cff00ff00/pvpenemy remove <Name-Realm>|r — Remove from list")
         print("  |cff00ff00/pvpenemy clear|r — Clear entire list")
+        print("  |cff00ff00/pvpenemy note <Name-Realm> <text>|r — Set a note for an enemy")
         print("  |cff00ff00/pvpenemy sound|r — Toggle warning sound")
         print("  |cff00ff00/pvpenemy flash|r — Toggle screen flash")
         print("  |cff00ff00/pvpenemy alert <1-30>|r — Set warning banner duration in seconds")

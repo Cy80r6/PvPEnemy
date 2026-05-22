@@ -29,6 +29,7 @@ A World of Warcraft **TBC Anniversary / Classic Era** addon that tracks enemy pl
 | `/pvpenemy clear` | Clear entire list |
 | `/pvpenemy sound` | Toggle warning sound |
 | `/pvpenemy flash` | Toggle screen flash |
+| `/pvpenemy note <Name-Realm> <text>` | Set a personal note for an enemy (shown in list and alert) |
 | `/pvpenemy alert <1-30>` | Set warning banner duration (seconds) |
 | `/pvpenemy bg` | Toggle tracking in battlegrounds/arenas |
 

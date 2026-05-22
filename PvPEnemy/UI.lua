@@ -34,6 +34,12 @@ warningSubtext:SetPoint("RIGHT", warningFrame, "RIGHT", -10, 0)
 warningSubtext:SetJustifyH("LEFT")
 warningSubtext:SetTextColor(0.8, 0.8, 0.8)
 
+local warningNote = warningFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+warningNote:SetPoint("TOPLEFT", warningSubtext, "BOTTOMLEFT", 0, -2)
+warningNote:SetPoint("RIGHT", warningFrame, "RIGHT", -10, 0)
+warningNote:SetJustifyH("LEFT")
+warningNote:SetTextColor(1, 0.82, 0)
+
 -- Flash overlay (full screen red flash)
 local flashFrame = CreateFrame("Frame", "PvPEnemyFlashFrame", UIParent)
 flashFrame:SetAllPoints(UIParent)
@@ -70,6 +76,15 @@ function ns.ShowWarning(name, enemyData, unitId)
     local levelStr = enemyData.level or "??"
     local classStr = enemyData.class or "Unknown"
     warningSubtext:SetText(string.format("Level %s %s — Killed you %dx", levelStr, classStr, enemyData.kills))
+
+    if enemyData.note then
+        warningNote:SetText("Note: " .. enemyData.note)
+        warningNote:Show()
+        warningFrame:SetHeight(80)
+    else
+        warningNote:Hide()
+        warningFrame:SetHeight(60)
+    end
 
     -- Try to set class icon
     local classFile = enemyData.class and enemyData.class:upper()
