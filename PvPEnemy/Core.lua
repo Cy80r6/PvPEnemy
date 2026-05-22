@@ -171,8 +171,9 @@ SlashCmdList["PVPENEMY"] = function(msg)
             local killerLvl = (data.level and data.level > 0) and tostring(data.level) or "??"
             local myLvl = data.myLevel and tostring(data.myLevel) or "??"
             local zonePart = data.lastZone and (" @ " .. data.lastZone) or ""
-            print(string.format("  |c%s%s|r — Killed you %dx [Lvl %s vs your %s], last: %s%s",
-                color, name, data.kills, killerLvl, myLvl, date("%Y-%m-%d %H:%M", data.lastKill), zonePart))
+            local wins = data.wins or 0
+            print(string.format("  |c%s%s|r — |cffff6060Deaths: %d|r  |cff60ff60Wins: %d|r  [Lvl %s vs your %s], last: %s%s",
+                color, name, data.kills, wins, killerLvl, myLvl, date("%Y-%m-%d %H:%M", data.lastKill), zonePart))
             if data.note then
                 print("    |cffffff00Note:|r " .. data.note)
             end

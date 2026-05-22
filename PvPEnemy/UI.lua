@@ -76,7 +76,8 @@ function ns.ShowWarning(name, enemyData, unitId)
     local levelStr = enemyData.level or "??"
     local classStr = enemyData.class or "Unknown"
     local zonePart = enemyData.lastZone and (" — " .. enemyData.lastZone) or ""
-    warningSubtext:SetText(string.format("Level %s %s — Killed you %dx%s", levelStr, classStr, enemyData.kills, zonePart))
+    local wins = enemyData.wins or 0
+    warningSubtext:SetText(string.format("Level %s %s — Deaths: %d  Wins: %d%s", levelStr, classStr, enemyData.kills, wins, zonePart))
 
     if enemyData.note then
         warningNote:SetText("Note: " .. enemyData.note)

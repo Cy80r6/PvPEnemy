@@ -9,10 +9,12 @@ local DAMAGE_EVENTS = {
     SPELL_PERIODIC_DAMAGE = true,
     SPELL_BUILDING_DAMAGE = true,
 }
+local playerGUID
 
 local frame = CreateFrame("Frame")
 
 function ns.InitTracker()
+    playerGUID = UnitGUID("player")
     frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     frame:RegisterEvent("PLAYER_DEAD")
     frame:SetScript("OnEvent", function(self, event)
@@ -37,6 +39,26 @@ function ns.OnCombatLogEvent()
     local isPlayer = bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_PLAYER) > 0
     local isHostile = bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) > 0
     if not (isPlayer and isHostile) then return end
+
+    -- Track when we kill a listed enemy
+    if subevent == "UNIT_DIED" then
+        if sourceGUID == playerGUID and destName then
+            local enemy = ns.GetEnemy(destName)
+            if not enemy then
+                -- fuzzy match
+                for storedName, data in pairs(ns.db.enemies) do
+                    if storedName:match("^([^-]+)") == destName then
+                        enemy = data; break
+                    end
+                end
+            end
+            if enemy then
+                enemy.wins = (enemy.wins or 0) + 1
+                print("|cffff4444PvP Enemy|r: You killed |cffff8800" .. destName .. "|r. Revenge! (" .. enemy.wins .. " win" .. (enemy.wins == 1 and "" or "s") .. ")")
+            end
+        end
+        return
+    end
 
     if DAMAGE_EVENTS[subevent] then
         -- Extract class and race from GUID
