@@ -179,6 +179,15 @@ SlashCmdList["PVPENEMY"] = function(msg)
         ns.db.settings.flashEnabled = not ns.db.settings.flashEnabled
         print("|cffff4444PvP Enemy|r: Flash " .. (ns.db.settings.flashEnabled and "enabled" or "disabled"))
 
+    elseif cmd == "alert" and arg ~= "" then
+        local n = tonumber(arg)
+        if n and n >= 1 and n <= 30 then
+            ns.db.settings.alertDuration = n
+            print("|cffff4444PvP Enemy|r: Alert duration set to |cff00ff00" .. n .. "|r seconds.")
+        else
+            print("|cffff4444PvP Enemy|r: Usage: /pvpenemy alert <1-30>")
+        end
+
     elseif cmd == "bg" then
         ns.db.settings.ignorePvPInstances = not ns.db.settings.ignorePvPInstances
         if ns.db.settings.ignorePvPInstances then
@@ -195,6 +204,7 @@ SlashCmdList["PVPENEMY"] = function(msg)
         print("  |cff00ff00/pvpenemy clear|r — Clear entire list")
         print("  |cff00ff00/pvpenemy sound|r — Toggle warning sound")
         print("  |cff00ff00/pvpenemy flash|r — Toggle screen flash")
+        print("  |cff00ff00/pvpenemy alert <1-30>|r — Set warning banner duration in seconds")
         print("  |cff00ff00/pvpenemy bg|r — Toggle tracking in battlegrounds/arenas (default: off)")
     end
 end

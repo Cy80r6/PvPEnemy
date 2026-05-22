@@ -167,10 +167,10 @@ local popupTimer = nil
 function ns.ShowAddEnemyPopup(attackerInfo)
     pendingAttacker = attackerInfo
     local color = ns.ClassColor(attackerInfo.class)
-    local killerLvl = (attackerInfo.level and attackerInfo.level > 0) and tostring(attackerInfo.level) or "příliš vysoký (nešlo vidět)"
+    local killerLvl = (attackerInfo.level and attackerInfo.level > 0) and tostring(attackerInfo.level) or "?? (too high to inspect)"
     local myLvl = attackerInfo.myLevel and tostring(attackerInfo.myLevel) or "??"
     popupText:SetText(string.format(
-        "|c%s%s|r killed you!\nLevel %s %s\nTy jsi byl level %s\n\nAdd to your kill list?",
+        "|c%s%s|r killed you!\nLevel %s %s (you were level %s)\n\nAdd to your kill list?",
         color,
         attackerInfo.name,
         killerLvl,

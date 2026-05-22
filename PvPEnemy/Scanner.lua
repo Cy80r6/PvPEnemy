@@ -5,6 +5,15 @@ local frame = CreateFrame("Frame")
 local recentAlerts = {} -- throttle: [name] = timestamp of last alert
 local ALERT_COOLDOWN = 30 -- seconds between repeated alerts for the same player
 
+local function CleanupRecentAlerts()
+    local now = GetTime()
+    for name, t in pairs(recentAlerts) do
+        if (now - t) > ALERT_COOLDOWN then
+            recentAlerts[name] = nil
+        end
+    end
+end
+
 function ns.InitScanner()
     frame:RegisterEvent("PLAYER_TARGET_CHANGED")
     frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
@@ -55,6 +64,7 @@ function ns.CheckUnit(unitId)
     if recentAlerts[name] and (now - recentAlerts[name]) < ALERT_COOLDOWN then
         return
     end
+    CleanupRecentAlerts()
     recentAlerts[name] = now
 
     -- Update level if we can see it now
