@@ -64,7 +64,7 @@ function ns.OnCombatLogEvent()
             guid = sourceGUID,
             class = class or "Unknown",
             race = race or "Unknown",
-            level = level or "??",
+            level = level,
         }
     end
 end

@@ -126,6 +126,7 @@ end
 -- Slash commands
 ---------------------------------------------------------------------------
 SLASH_PVPENEMY1 = "/pvpenemy"
+SLASH_PVPENEMY2 = "/pvpe"
 SlashCmdList["PVPENEMY"] = function(msg)
     local cmd, arg = msg:match("^(%S+)%s*(.*)")
     cmd = cmd and cmd:lower() or msg:lower()
@@ -170,7 +171,7 @@ SlashCmdList["PVPENEMY"] = function(msg)
         print("|cffff4444PvP Enemy|r — Kill List:")
         for name, data in pairs(ns.db.enemies) do
             local color = ns.ClassColor(data.class)
-            local killerLvl = (data.level and data.level > 0) and tostring(data.level) or "??"
+            local killerLvl = (type(data.level) == "number" and data.level > 0) and tostring(data.level) or "??"
             local myLvl = data.myLevel and tostring(data.myLevel) or "??"
             local zonePart = data.lastZone and (" @ " .. data.lastZone) or ""
             local wins = data.wins or 0
