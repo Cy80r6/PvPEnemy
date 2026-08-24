@@ -42,21 +42,11 @@ function ns.CheckUnit(unitId)
         name = name .. "-" .. realm
     end
 
-    -- Check if on our kill list
-    local enemy = ns.GetEnemy(name)
-    if not enemy then
-        -- Also try without realm (for same-server players)
-        for storedName, data in pairs(ns.db.enemies) do
-            -- Match just the name part before the dash
-            local storedBase = storedName:match("^([^-]+)")
-            if storedBase and storedBase == name then
-                enemy = data
-                name = storedName
-                break
-            end
-        end
-    end
-
+    -- Exact lookup: ns.GetEnemy canonicalizes to "Name-Realm", so a stranger
+    -- from another realm who happens to share a name no longer matches.
+    name = ns.Canon(name)
+    if not name then return end
+    local enemy = ns.db.enemies[name]
     if not enemy then return end
 
     -- Throttle alerts
@@ -76,5 +66,5 @@ function ns.CheckUnit(unitId)
 
     -- Fire alert
     ns.ShowWarning(name, enemy, unitId)
-    ns.ShareAlert(name, enemy)
+    if ns.ShareAlert then ns.ShareAlert(name, enemy) end
 end

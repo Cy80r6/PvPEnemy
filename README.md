@@ -14,6 +14,7 @@ A World of Warcraft **TBC Anniversary / Classic Era** addon that tracks enemy pl
 
 **Alerts**
 - When you encounter a tracked enemy (nameplate, target, mouseover), a warning banner appears at the top of your screen with their name, class, kill/win count, last seen zone, and any note you've set
+- Click the banner to target them instantly — works in combat too
 - Optional screen flash and sound alert
 - 30-second cooldown per enemy to avoid spam
 
@@ -56,6 +57,24 @@ A World of Warcraft **TBC Anniversary / Classic Era** addon that tracks enemy pl
 
 - TBC Anniversary (patch 2.5.5, interface 20505)
 - Classic Era (interface 11507)
+
+## Changelog
+
+### 1.3.0
+
+- Click the warning banner to target the enemy immediately, no need to find their nameplate — works in combat too, since it's done via a secure macro (`/targetexact`) rather than a plain click handler that WoW would block mid-fight
+
+### 1.2.0
+
+Three things were quietly broken before this release. If you tested an earlier build, they are worth knowing about:
+
+- **Guild sharing never worked.** It used a chat API that no longer exists on the Classic client, which also meant the `PvP Enemy loaded.` message never appeared at login. Both are fixed — if you see that message on login, sharing is live
+- **Wins were never counted.** The addon was watching a combat log event that does not say who landed the killing blow, so the counter stayed at zero and the revenge popup never appeared
+- **Alerts could fire for the wrong player.** A tracked `Celu` would set off the warning for any `Celu` you met, including a stranger from another realm. Names are now matched exactly, realm included
+
+Your kill list is upgraded automatically the first time you log in on 1.2.0 — names get their realm filled in and any duplicate entries for the same player are merged. You will see a one-line summary in chat when it happens.
+
+Also in this release: guild alerts carry a protocol version and are checked before use, a flood of alerts from one guildmate is throttled, and a subsystem that fails to start can no longer take the rest of the addon down with it.
 
 ## Feedback & Suggestions
 

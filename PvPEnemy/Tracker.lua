@@ -13,15 +13,27 @@ local playerGUID
 
 local frame = CreateFrame("Frame")
 
+-- UnitGUID("player") is not reliable at ADDON_LOADED, so resolve it lazily and
+-- refresh it at PLAYER_LOGIN.
+local function PlayerGUID()
+    if not playerGUID then
+        playerGUID = UnitGUID("player")
+    end
+    return playerGUID
+end
+
 function ns.InitTracker()
     playerGUID = UnitGUID("player")
     frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     frame:RegisterEvent("PLAYER_DEAD")
+    frame:RegisterEvent("PLAYER_LOGIN")
     frame:SetScript("OnEvent", function(self, event)
         if event == "COMBAT_LOG_EVENT_UNFILTERED" then
             ns.OnCombatLogEvent()
         elseif event == "PLAYER_DEAD" then
             ns.OnPlayerDead()
+        elseif event == "PLAYER_LOGIN" then
+            playerGUID = UnitGUID("player")
         end
     end)
 end
@@ -31,30 +43,28 @@ function ns.OnCombatLogEvent()
         sourceGUID, sourceName, sourceFlags, sourceRaidFlags,
         destGUID, destName, destFlags, destRaidFlags = CombatLogGetCurrentEventInfo()
 
-    -- Case 1: we killed someone
-    if subevent == "UNIT_DIED" and sourceGUID == playerGUID and destName then
-        local enemy, storedName = ns.GetEnemy(destName), destName
-        if not enemy then
-            for n, data in pairs(ns.db.enemies) do
-                if n:match("^([^-]+)") == destName then
-                    enemy = data; storedName = n; break
-                end
-            end
-        end
+    local myGUID = PlayerGUID()
+
+    -- Case 1: we landed the killing blow.
+    -- UNIT_DIED carries no source (sourceGUID is 0000000000000000), so it can
+    -- never tell us who did the killing. PARTY_KILL is the subevent that does.
+    if subevent == "PARTY_KILL" and myGUID and sourceGUID == myGUID and destName then
+        local enemy, storedName = ns.FindEnemy(destName)
         if enemy then
             enemy.wins = (enemy.wins or 0) + 1
-            print("|cffff4444PvP Enemy|r: You killed |cffff8800" .. destName .. "|r. Revenge! (" .. enemy.wins .. " win" .. (enemy.wins == 1 and "" or "s") .. ")")
+            print("|cffff4444PvP Enemy|r: You killed |cffff8800" .. ns.ShortName(storedName)
+                .. "|r. Revenge! (" .. enemy.wins .. " win" .. (enemy.wins == 1 and "" or "s") .. ")")
             if ns.OnEnemyKilled then ns.OnEnemyKilled(storedName) end
         end
         return
     end
 
     -- Case 2: enemy player is hitting us
-    if destGUID ~= UnitGUID("player") then return end
+    if not myGUID or destGUID ~= myGUID then return end
     if not sourceGUID or sourceGUID == "" then return end
 
-    local isPlayer = bit.band(sourceFlags, COMBATLOG_OBJECT_TYPE_PLAYER) > 0
-    local isHostile = bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) > 0
+    local isPlayer = bit.band(sourceFlags or 0, COMBATLOG_OBJECT_TYPE_PLAYER) > 0
+    local isHostile = bit.band(sourceFlags or 0, COMBATLOG_OBJECT_REACTION_HOSTILE) > 0
     if not (isPlayer and isHostile) then return end
 
     if DAMAGE_EVENTS[subevent] then
@@ -76,9 +86,13 @@ function ns.OnPlayerDead()
         return
     end
 
-    local name = lastAttacker.name
-    if not name then return end
+    local name = ns.Canon(lastAttacker.name)
+    if not name then
+        lastAttacker = nil
+        return
+    end
 
+    lastAttacker.name = name
     lastAttacker.myLevel = UnitLevel("player")
     lastAttacker.zone = GetZoneText()
 

@@ -4,7 +4,13 @@ local addonName, ns = ...
 ---------------------------------------------------------------------------
 -- Warning frame (top of screen alert)
 ---------------------------------------------------------------------------
-local warningFrame = CreateFrame("Frame", "PvPEnemyWarningFrame", UIParent, "BackdropTemplate")
+-- Button (not Frame) + SecureActionButtonTemplate so a click can target the
+-- enemy even during combat lockdown. TargetUnit() is a protected function;
+-- calling it from a plain insecure OnClick handler works fine out of combat
+-- but is silently blocked in combat lockdown — exactly the moment this alert
+-- is for. The click is instead declared via attributes and dispatched by
+-- Blizzard's own secure click handler (same technique as Clique/Grid/VuhDo).
+local warningFrame = CreateFrame("Button", "PvPEnemyWarningFrame", UIParent, "SecureActionButtonTemplate, BackdropTemplate")
 warningFrame:SetSize(400, 60)
 warningFrame:SetPoint("TOP", UIParent, "TOP", 0, -100)
 warningFrame:SetFrameStrata("HIGH")
@@ -17,6 +23,21 @@ warningFrame:SetBackdrop({
 warningFrame:SetBackdropColor(0.4, 0, 0, 0.9)
 warningFrame:SetBackdropBorderColor(1, 0, 0, 1)
 warningFrame:Hide()
+
+-- Click target: macrotext is re-resolved by name against currently visible
+-- units at the moment of the click, so it stays correct even if the nameplate
+-- token that triggered the alert has since been recycled for someone else.
+-- The macrotext attribute itself is set per-alert in ShowWarning().
+warningFrame:RegisterForClicks("LeftButtonUp")
+warningFrame:SetAttribute("type", "macro")
+
+warningFrame:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+warningFrame:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+    GameTooltip:SetText("Click to target")
+    GameTooltip:Show()
+end)
+warningFrame:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 local warningIcon = warningFrame:CreateTexture(nil, "ARTWORK")
 warningIcon:SetSize(32, 32)
@@ -71,13 +92,19 @@ end
 
 function ns.ShowWarning(name, enemyData, unitId)
     local color = ns.ClassColor(enemyData.class)
-    warningText:SetText("|c" .. color .. name .. "|r")
+    warningText:SetText("|c" .. color .. ns.ShortName(name) .. "|r")
 
-    local levelStr = enemyData.level or "??"
+    -- Reuses the same name form the banner displays: bare name on our own
+    -- realm, "Name-Realm" cross-realm — the shape /targetexact needs to match
+    -- a currently visible unit.
+    warningFrame:SetAttribute("macrotext", "/targetexact " .. ns.ShortName(name))
+
+    local levelStr = (type(enemyData.level) == "number" and enemyData.level > 0) and tostring(enemyData.level) or "??"
     local classStr = enemyData.class or "Unknown"
-    local zonePart = enemyData.lastZone and (" — " .. enemyData.lastZone) or ""
-    local wins = enemyData.wins or 0
-    warningSubtext:SetText(string.format("Level %s %s — Deaths: %d  Wins: %d%s", levelStr, classStr, enemyData.kills, wins, zonePart))
+    local zonePart = enemyData.lastZone and (" — " .. tostring(enemyData.lastZone)) or ""
+    local deaths = tonumber(enemyData.kills) or 0
+    local wins = tonumber(enemyData.wins) or 0
+    warningSubtext:SetText(string.format("Level %s %s — Deaths: %d  Wins: %d%s", levelStr, classStr, deaths, wins, zonePart))
 
     if enemyData.note then
         warningNote:SetText("Note: " .. enemyData.note)
@@ -184,12 +211,14 @@ local popupTimer = nil
 function ns.ShowAddEnemyPopup(attackerInfo)
     pendingAttacker = attackerInfo
     local color = ns.ClassColor(attackerInfo.class)
-    local killerLvl = (attackerInfo.level and attackerInfo.level > 0) and tostring(attackerInfo.level) or "?? (too high to inspect)"
-    local myLvl = attackerInfo.myLevel and tostring(attackerInfo.myLevel) or "??"
+    local killerLvl = (type(attackerInfo.level) == "number" and attackerInfo.level > 0)
+        and tostring(attackerInfo.level) or "?? (too high to inspect)"
+    local myLvl = (type(attackerInfo.myLevel) == "number" and attackerInfo.myLevel > 0)
+        and tostring(attackerInfo.myLevel) or "??"
     popupText:SetText(string.format(
         "|c%s%s|r killed you!\nLevel %s %s (you were level %s)\n\nAdd to your kill list?",
         color,
-        attackerInfo.name,
+        ns.ShortName(attackerInfo.name),
         killerLvl,
         attackerInfo.class or "Unknown",
         myLvl
@@ -264,9 +293,10 @@ end)
 
 function ns.ShowRevengePopup(enemyName, friendName)
     pendingRevenge = { enemyName = enemyName, friendName = friendName }
+    local friendShort, enemyShort = ns.ShortName(friendName), ns.ShortName(enemyName)
     revengeText:SetText(string.format(
         "|cffffff00%s|r spotted |cffff8800%s|r.\nYou just killed them!\n\nTell |cffffff00%s|r you got revenge?",
-        friendName, enemyName, friendName))
+        friendShort, enemyShort, friendShort))
     revengeFrame:Show()
 
     if revengeTimer then revengeTimer:Cancel() end
